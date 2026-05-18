@@ -3,8 +3,8 @@ import api_lib
 from helpers import validate_api_base_url, validate_buckets, str_to_bool_or_none
 
 MAJOR = 0
-MINOR = 7
-BUGFIX = 1
+MINOR = 8
+BUGFIX = 0
 INFO = ""
 
 VERSION = "{}.{}.{}".format(MAJOR, MINOR, BUGFIX)
@@ -21,7 +21,17 @@ if TLS_VERIFY is None:
     # If we failed to determine a boolean value it means it (should) be a string representing the CA_BUNDLE path
     TLS_VERIFY = tls_verify_temp
 
-API_BASE_URL = validate_api_base_url(os.environ["API_BASE_URL"])
+fqdn = os.getenv("FQDN")
+
+if fqdn:
+    # Собираем полный URL из FQDN
+    # Добавляем протокол и стандартный путь API
+    raw_url = f"https://{fqdn.strip()}/bigbluebutton/api/"
+    API_BASE_URL = validate_api_base_url(raw_url)
+else:
+    # Оставляем возможность использовать прямой API_BASE_URL, если FQDN не задан
+    API_BASE_URL = validate_api_base_url(os.environ.get("API_BASE_URL"))
+
 # SSH into server and run: `$ bbb-conf --secret` to get secret
 API_SECRET = os.environ["API_SECRET"]
 
@@ -39,9 +49,7 @@ BIND_IP = os.getenv("BIND_IP", "0.0.0.0")
 
 RECORDINGS_METRICS_ENABLE = False if os.getenv("RECORDINGS_METRICS", "true").lower() == "false" else True
 
-RECORDINGS_METRICS_READ_FROM_DISK = False if os.getenv("RECORDINGS_METRICS_READ_FROM_DISK",
-                                                       "false").lower() == "false" else True
-
+RECORDINGS_METRICS_READ_FROM_DISK = False if os.getenv("RECORDINGS_METRICS_READ_FROM_DISK", "false").lower() == "false" else True
 
 recordings_metrics_base_dir = "/var/bigbluebutton"
 

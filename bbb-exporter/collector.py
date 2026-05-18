@@ -94,6 +94,7 @@ class BigBlueButtonCollector:
                 # This is an additional metric that is only available if recordings_metrics_from_disk is enabled
                 # since this data isn't available via the API
                 yield self.metric_recordings_unprocessed_from_disk()
+                yield self.metric_meetings_ended_from_disk()
 
             else:
                 # Perform expensive API calls - this will increase the latency of the scrape
@@ -332,7 +333,14 @@ class BigBlueButtonCollector:
         metric = CounterMetricFamily('bbb_unique_breakout_rooms', "Unique breakout rooms counter")
         metric.add_metric([], self.unique_breakout_rooms_count)
         return metric
-    
+
+    def metric_meetings_ended_from_disk(self):
+        logging.debug("Querying disk for ended meetings")
+        metric = GaugeMetricFamily('bbb_meetings_ended', "Total number of ended BigBlueButton meetings "
+                                                                 "be processed (scraped from disk)")
+        metric.add_metric([], meetings_ended_from_disk(self.recordings_metrics_base_dir))
+        return metric
+
     def metric_bbb_version(self):
         with open("/etc/bigbluebutton/bigbluebutton-release", "r") as f:
             bbb_release = f.read()
@@ -372,36 +380,38 @@ class BigBlueButtonCollector:
             p_by_m[key] += participants
         return p_by_m
 
+def count_files_in(path):
+    # use iterators and incremet by 1 for each
+    with os.scandir(path) as it:
+        return sum(1 for entry in it if entry.is_file())
+
+def count_dirs_in(path):
+    # use iterators and incremet by 1 for each
+    with os.scandir(path) as it:
+        return sum(1 for entry in it if entry.is_dir())
 
 def recordings_processing_from_disk(bigbluebutton_base_dir) -> int:
     # bigbluebutton_base_dir i.e. "/var/bigbluebutton/"
-    path = os.path.join(bigbluebutton_base_dir, "recording/process/presentation")
-    try:
-        return len(os.listdir(path=path))
-    except FileNotFoundError:
-        logging.info("Path %s doesn't exist, setting processing recordings to 0", path)
+    # count processing records in all possible formats
+    process_path = os.path.join(bigbluebutton_base_dir, "recording/process")
+    if not os.path.exists(process_path):
         return 0
-
+    with os.scandir(process_path) as entries:
+        return sum(count_dirs_in(e.path) for e in entries if e.is_dir())
 
 def recordings_published_from_disk(bigbluebutton_base_dir) -> int:
     # bigbluebutton_base_dir i.e. "/var/bigbluebutton/"
     path = os.path.join(bigbluebutton_base_dir, "published/presentation")
-    try:
-        return len(os.listdir(path=path))
-    except FileNotFoundError:
-        logging.info("Path %s doesn't exist, setting published recordings to 0", path)
+    if not os.path.exists(path):
         return 0
-
+    return count_dirs_in(path)
 
 def recordings_deleted_from_disk(bigbluebutton_base_dir) -> int:
     # bigbluebutton_base_dir i.e. "/var/bigbluebutton/"
-    path = os.path.join(bigbluebutton_base_dir, "recording/status/published")
-    try:
-        return len(os.listdir(path=path)) - recordings_published_from_disk(bigbluebutton_base_dir)
-    except FileNotFoundError:
-        logging.info("Path %s doesn't exist, setting deleted recordings to 0", path)
+    path = os.path.join(bigbluebutton_base_dir, "deleted/presentation")
+    if not os.path.exists(path):
         return 0
-
+    return count_dirs_in(path)
 
 def recordings_unprocessed_from_disk(bigbluebutton_base_dir) -> int:
     # bigbluebutton_base_dir i.e. "/var/bigbluebutton/"
@@ -411,3 +421,10 @@ def recordings_unprocessed_from_disk(bigbluebutton_base_dir) -> int:
     except FileNotFoundError:
         logging.info("Path %s doesn't exist, setting unprocessed recordings to 0", path)
         return 0
+
+def meetings_ended_from_disk(bigbluebutton_base_dir) -> int:
+    # bigbluebutton_base_dir i.e. "/var/bigbluebutton/"
+    path = os.path.join(bigbluebutton_base_dir, "recording/status/archived")
+    if not os.path.exists(path):
+        return 0
+    return count_files_in(path)

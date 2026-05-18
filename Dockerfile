@@ -1,12 +1,12 @@
-FROM python:3.8-alpine
-EXPOSE 9688
-
-COPY requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir -r /app/requirements.txt
+FROM python:3.14-alpine
+LABEL org.opencontainers.image.title="bbb_exporter"
+LABEL org.opencontainers.image.description="Prometheus exporter BigBlueButton services"
 
 COPY ./bbb-exporter /app
-WORKDIR /app
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
+WORKDIR /app
+EXPOSE 9688
 USER nobody
 ENTRYPOINT ["python"]
 CMD ["server.py"]

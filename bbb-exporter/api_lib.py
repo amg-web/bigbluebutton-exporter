@@ -84,4 +84,4 @@ def getMeetings(client: Client) -> Optional[collections.OrderedDict]:
 
 
 def getRecordings(client: Client, state: str) -> Optional[collections.OrderedDict]:
-    return api_get_call("getRecordings", client, params={"state": state})
+    return api_get_call("getRecordings", client, params={"state": state, "limit": "1"})

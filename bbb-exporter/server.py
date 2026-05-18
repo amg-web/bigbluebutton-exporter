@@ -1,5 +1,7 @@
 import logging
 import sys
+import signal
+
 from time import sleep
 
 from prometheus_client import start_http_server, REGISTRY
@@ -8,9 +10,12 @@ import settings
 from collector import BigBlueButtonCollector
 from helpers import verify_recordings_base_dir_exists
 
-logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s [%(levelname)s]: %(message)s")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s]: %(message)s")
 
+
+def shutdown_handler(sig, frame):
+    logging.info(f"Received signal {sig}. Shutting down...")
+    sys.exit(0)
 
 if __name__ == '__main__':
     if settings.DEBUG:
@@ -44,5 +49,17 @@ if __name__ == '__main__':
         collector.set_room_video_participants_buckets(settings.ROOM_VIDEO_PARTICIPANTS_CUSTOM_BUCKETS)
 
     REGISTRY.register(collector)
-    while True:
-        sleep(1)
+
+    signal.signal(signal.SIGTERM, shutdown_handler)
+    signal.signal(signal.SIGINT, shutdown_handler)
+
+    logging.info("Exporter is running. Press Ctrl+C to stop.")
+
+    try:
+        while True:
+            if hasattr(signal, 'pause'):
+                signal.pause()
+            else:
+                sleep(1)
+    except SystemExit:
+        pass

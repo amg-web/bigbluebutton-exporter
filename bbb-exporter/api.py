@@ -54,10 +54,7 @@ def get_recordings(state: str):
 
     recordings = []
     try:
-        if type(data['response']['recordings']['recording']) == list:
-            recordings = data['response']['recordings']['recording']
-        else:
-            recordings.append(data['response']['recordings']['recording'])
+        recordings = data['response']['totalElements']
     except KeyError:
         logging.warning("Failed to parse recordings")
     except TypeError:
@@ -72,4 +69,3 @@ def get_recordings(state: str):
         response.append(recording)
 
     return response
-

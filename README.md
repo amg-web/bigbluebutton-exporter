@@ -2,13 +2,10 @@
 Prometheus exporter for BigBlueButton.
 On a HTTP `/metrics` request, the exporter will query the BigBlueButton's API for data which it then aggregates and exposes as Prometheus metrics.
 
-![Docker Pulls](https://img.shields.io/docker/pulls/greenstatic/bigbluebutton-exporter?logo=Docker)
-![Docker Image Version (latest semver)](https://img.shields.io/docker/v/greenstatic/bigbluebutton-exporter?label=latest%20docker%20image&logo=Docker&sort=semver)
 ![GitHub](https://img.shields.io/github/license/greenstatic/bigbluebutton-exporter)
 
-Docker container image: [https://hub.docker.com/r/greenstatic/bigbluebutton-exporter](https://hub.docker.com/r/greenstatic/bigbluebutton-exporter)
-
 Default port: 9688
+Default bind IP: 0.0.0.0
 
 ## Documentation
 Available at: [https://bigbluebutton-exporter.greenstatic.dev](https://bigbluebutton-exporter.greenstatic.dev)
@@ -24,3 +21,16 @@ See: [Exporter User Guide - Metrics](https://bigbluebutton-exporter.greenstatic.
 
 ## Environment Variables
 See: [Exporter User Guide - Environment Variables](https://bigbluebutton-exporter.greenstatic.dev/exporter-user-guide/#environment-variables).
+
+## CHANGELOG
+18.05.2026
+- Python and dependencies updated
+- add ENV variable FQDN (API_BASE_URL still can be used instead)
+- Grafana Dashboard is compatible with newer Grafana versions
+- Records count by API uses limit key and get data from totalElements tag
+- Add possibbility to count ended meetings by counting number of files (it will be dropped if server migrated without status dir)
+- node exporter mounts filter items added for clener result.
+- grafana provisioning folder
+- grafans security env vars
+- bbb-exporter is bulding localy instead of pulling from docker hub (anyway it's very fast)
+- other minor changes

@@ -1,5 +1,5 @@
 site_name: BigBlueButton Exporter
-repo_url: https://github.com/greenstatic/bigbluebutton-exporter
+repo_url: https://github.com/amg-web/bigbluebutton-exporter
 strict: true
 theme:
   name: material

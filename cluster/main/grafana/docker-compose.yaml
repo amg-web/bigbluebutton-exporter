@@ -1,0 +1,50 @@
+networks:
+  grafana:
+
+services:
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:latest
+    networks:
+      - grafana
+    command:
+      # Default commands from Dockerfile
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+      # Our custom commands - metrics will be stored for 365 days
+      - "--storage.tsdb.retention.time=365d"
+      #- "--log.level=debug"
+      - "--web.listen-address=127.0.0.1:9090"
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    restart: unless-stopped
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:latest
+    network_mode: host
+    depends_on:
+      - prometheus
+    networks:
+      - grafana
+    environment:
+      GF_SERVER_HTTP_ADDR: "127.0.0.1"
+      GF_SERVER_HTTP_PORT: "3001"
+      GF_SERVER_ROOT_URL: "https://${FQDN}/monitoring"
+      # GF_SECURITY_ADMIN_USER: admin
+      # GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_CONTENT_SECURITY_POLICY: "true"
+      GF_SECURITY_COOKIE_SECURE: "true"
+      GF_SECURITY_COOKIE_SAMESITE: "true"
+      # GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: "/etc/grafana/provisioning/dashboards/bbb_node.json"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana:/etc/grafana/provisioning/
+    restart: unless-stopped
+
+volumes:
+  prometheus_data:
+  grafana_data:

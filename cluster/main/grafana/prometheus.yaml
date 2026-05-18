@@ -1,0 +1,29 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'bbb'
+    scheme: https
+    basic_auth:
+        username: "scalelite"
+        password: "FIX_ME"
+    static_configs:
+      - targets: ['BBB_NODE_FIXME']
+
+  - job_name: 'bbb_node_exporter'
+    metrics_path: '/node_exporter/metrics'
+    params:
+      format: [prometheus]
+    honor_labels: true
+    scheme: https
+    basic_auth:
+        username: "scalelite"
+        password: "FIX_ME"
+    static_configs:
+      - targets: ['BBB_NODE_FIXME']

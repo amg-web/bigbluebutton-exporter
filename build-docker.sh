@@ -14,4 +14,4 @@ VERSION="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_BUGFIX}"
 
 # Build docker image
 cd ${DOCKERFILE_PATH}
-docker build -t greenstatic/bigbluebutton-exporter:v${VERSION} -t greenstatic/bigbluebutton-exporter:latest .
+docker build -t amg-web/bigbluebutton-exporter:v${VERSION} -t amg-web/bigbluebutton-exporter:latest .
