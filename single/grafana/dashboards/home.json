@@ -2,7 +2,7 @@
   "apiVersion": "dashboard.grafana.app/v2",
   "kind": "Dashboard",
   "metadata": {
-    "name": "adx7s2q",
+    "name": "instance",
     "generation": 1,
     "creationTimestamp": "2026-05-19T10:49:52Z",
     "labels": {},
@@ -2644,7 +2644,7 @@
       "hideTimepicker": false,
       "fiscalYearStartMonth": 0
     },
-    "title": "BigBlueButton Server Instance",
+    "title": "BigBlueButton Server",
     "variables": [
       {
         "kind": "DatasourceVariable",

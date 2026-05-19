@@ -3,6 +3,7 @@ services:
     container_name: bbb-exporter
     network_mode: host
     build: ../
+    pull_policy: build
     image: amg-web/bbb-exporter
     volumes:
       # Can be removed if `BBB_VERSION_READ_FROM_DISK` is set to false (or omitted).
@@ -60,12 +61,12 @@ services:
       GF_SERVER_HTTP_ADDR: '127.0.0.1'
       GF_SERVER_HTTP_PORT: '3001'
       GF_SERVER_ROOT_URL: 'https://${FQDN}/monitoring'
-      # GF_SECURITY_ADMIN_USER: admin
-      # GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_USER: gadmin
+      GF_SECURITY_ADMIN_PASSWORD: new-admin
       GF_SECURITY_CONTENT_SECURITY_POLICY: 'true'
       GF_SECURITY_COOKIE_SECURE: 'true'
       GF_SECURITY_COOKIE_SAMESITE: 'true'
-      # GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: '/etc/grafana/provisioning/dashboards/home.json' # /usr/share/grafana/public/dashboards/home.json default on linux
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: '/etc/grafana/provisioning/dashboards/home.json'
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana:/etc/grafana/provisioning/
