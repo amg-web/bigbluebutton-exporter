@@ -6,10 +6,10 @@ services:
     image: amg-web/bbb-exporter
     volumes:
       # Can be removed if `BBB_VERSION_READ_FROM_DISK` is set to false (or omitted).
-      - "/etc/bigbluebutton/bigbluebutton-release:/etc/bigbluebutton/bigbluebutton-release:ro"
+      - '/etc/bigbluebutton/bigbluebutton-release:/etc/bigbluebutton/bigbluebutton-release:ro'
       # Can be removed if `RECORDINGS_METRICS_READ_FROM_DISK` is set to false (or omitted).
       # See https://bigbluebutton-exporter.greenstatic.dev/exporter-user-guide/#optimizations for details.
-      - "/var/bigbluebutton:/var/bigbluebutton:ro"
+      - '/var/bigbluebutton:/var/bigbluebutton:ro'
     env_file:
       - .env
     restart: unless-stopped
@@ -18,14 +18,15 @@ services:
     container_name: node_exporter
     image: prom/node-exporter:latest
     command:
-      - "--path.rootfs=/host"
-      - "--web.listen-address=127.0.0.1:9100"
-      - "--collector.filesystem.mount-points-exclude=^/(dev|boot|run|proc|sys|var/lib/docker/.+|var/lib/kubelet/.+)($|/)"
+      - '--path.rootfs=/host'
+      - '--web.listen-address=127.0.0.1:9100'
+      - '--collector.filesystem.mount-points-exclude=^/(dev|boot|run|proc|sys|var/lib/docker/.+|var/lib/kubelet/.+)($|/)'
+      - '--collector.ethtool.device-exclude="^(veth|br-|docker|virbr).*$"'
     network_mode: host
     pid: host
     restart: unless-stopped
     volumes:
-      - "/:/host:ro,rslave"
+      - '/:/host:ro,rslave'
 
   prometheus:
     container_name: prometheus
@@ -36,14 +37,14 @@ services:
       - node_exporter
     command:
       # Default commands from Dockerfile
-      - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--storage.tsdb.path=/prometheus"
-      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
-      - "--web.console.templates=/usr/share/prometheus/consoles"
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
       # Our custom commands - metrics will be stored for 365 days
-      - "--storage.tsdb.retention.time=365d"
-      #- "--log.level=debug"
-      - "--web.listen-address=127.0.0.1:9090"
+      - '--storage.tsdb.retention.time=365d'
+      #- '--log.level=debug'
+      - '--web.listen-address=127.0.0.1:9090'
     volumes:
       - ./prometheus.yaml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
@@ -56,15 +57,15 @@ services:
     depends_on:
       - prometheus
     environment:
-      GF_SERVER_HTTP_ADDR: "127.0.0.1"
-      GF_SERVER_HTTP_PORT: "3001"
-      GF_SERVER_ROOT_URL: "https://${FQDN}/monitoring"
+      GF_SERVER_HTTP_ADDR: '127.0.0.1'
+      GF_SERVER_HTTP_PORT: '3001'
+      GF_SERVER_ROOT_URL: 'https://${FQDN}/monitoring'
       # GF_SECURITY_ADMIN_USER: admin
       # GF_SECURITY_ADMIN_PASSWORD: admin
-      GF_SECURITY_CONTENT_SECURITY_POLICY: "true"
-      GF_SECURITY_COOKIE_SECURE: "true"
-      GF_SECURITY_COOKIE_SAMESITE: "true"
-      # GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: "/etc/grafana/provisioning/dashboards/bbb_node.json"
+      GF_SECURITY_CONTENT_SECURITY_POLICY: 'true'
+      GF_SECURITY_COOKIE_SECURE: 'true'
+      GF_SECURITY_COOKIE_SAMESITE: 'true'
+      # GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: '/etc/grafana/provisioning/dashboards/home.json' # /usr/share/grafana/public/dashboards/home.json default on linux
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana:/etc/grafana/provisioning/

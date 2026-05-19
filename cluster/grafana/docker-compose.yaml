@@ -25,24 +25,24 @@ services:
   grafana:
     container_name: grafana
     image: grafana/grafana:latest
-    network_mode: host
     depends_on:
       - prometheus
     networks:
       - grafana
+    ports:
+      - 127.0.0.1:3001:3000
     environment:
-      GF_SERVER_HTTP_ADDR: "127.0.0.1"
-      GF_SERVER_HTTP_PORT: "3001"
       GF_SERVER_ROOT_URL: "https://${FQDN}/monitoring"
       # GF_SECURITY_ADMIN_USER: admin
       # GF_SECURITY_ADMIN_PASSWORD: admin
       GF_SECURITY_CONTENT_SECURITY_POLICY: "true"
       GF_SECURITY_COOKIE_SECURE: "true"
       GF_SECURITY_COOKIE_SAMESITE: "true"
-      # GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: "/etc/grafana/provisioning/dashboards/bbb_node.json"
+      # GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: "/etc/grafana/provisioning/dashboards/all_servers.json"
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./grafana:/etc/grafana/provisioning/
+      - ./datasources:/etc/grafana/provisioning/datasources
+      # - ./dashboards:/etc/grafana/provisioning/dashboards
     restart: unless-stopped
 
 volumes:

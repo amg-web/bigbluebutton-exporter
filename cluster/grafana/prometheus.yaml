@@ -13,6 +13,12 @@ scrape_configs:
     basic_auth:
         username: "scalelite"
         password: "FIX_ME"
+    relabel_configs:
+      - source_labels: ['__address__']
+        separator:     ':'
+        regex:         '(.*):.*'
+        target_label:  'instance'
+        replacement:   '$1'
     static_configs:
       - targets: ['BBB_NODE_FIXME']
 
@@ -25,5 +31,11 @@ scrape_configs:
     basic_auth:
         username: "scalelite"
         password: "FIX_ME"
+        relabel_configs:
+    - source_labels: ['__address__']
+        separator:     ':'
+        regex:         '(.*):.*'
+        target_label:  'instance'
+        replacement:   '$1'
     static_configs:
       - targets: ['BBB_NODE_FIXME']
