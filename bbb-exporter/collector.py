@@ -415,12 +415,10 @@ def recordings_deleted_from_disk(bigbluebutton_base_dir) -> int:
 
 def recordings_unprocessed_from_disk(bigbluebutton_base_dir) -> int:
     # bigbluebutton_base_dir i.e. "/var/bigbluebutton/"
-    path = os.path.join(bigbluebutton_base_dir, "recording/status/sanity")
-    try:
-        return len(os.listdir(path=path))
-    except FileNotFoundError:
-        logging.info("Path %s doesn't exist, setting unprocessed recordings to 0", path)
+    path = os.path.join(bigbluebutton_base_dir, "recording/status/ended")
+    if not os.path.exists(path):
         return 0
+    return count_files_in(path)
 
 def meetings_ended_from_disk(bigbluebutton_base_dir) -> int:
     # bigbluebutton_base_dir i.e. "/var/bigbluebutton/"
