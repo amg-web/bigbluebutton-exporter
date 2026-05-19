@@ -21,12 +21,12 @@ if TLS_VERIFY is None:
     # If we failed to determine a boolean value it means it (should) be a string representing the CA_BUNDLE path
     TLS_VERIFY = tls_verify_temp
 
-fqdn = os.getenv("FQDN")
+fqdn = os.getenv("FQDN").lower().strip()
 
 if fqdn:
     # Собираем полный URL из FQDN
     # Добавляем протокол и стандартный путь API
-    raw_url = f"https://{fqdn.strip()}/bigbluebutton/api/"
+    raw_url = f"https://{fqdn}/bigbluebutton/api/"
     API_BASE_URL = validate_api_base_url(raw_url)
 else:
     # Оставляем возможность использовать прямой API_BASE_URL, если FQDN не задан
@@ -58,3 +58,6 @@ BBB_VERSION_READ_FROM_DISK = False if os.getenv("BBB_VERSION_READ_FROM_DISK", "f
 # Global (gasp.) variable flag that is used to mark if communicating with BigBlueButton's API is possible.
 # Used to set the `bbb_api_up` metric.
 _api_up = False
+
+# supported: 'sha1', 'sha256', 'sha384', 'sha512'
+hash_algorithm = os.getenv("HASH_ALGORITHM", default="sha256").lower()

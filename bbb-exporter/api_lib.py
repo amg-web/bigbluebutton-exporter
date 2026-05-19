@@ -26,7 +26,7 @@ class Client:
 def api_get_call(endpoint: str, client: Client, params={}) -> Optional[collections.OrderedDict]:
     if client.tls_verify is False:
         logging.info("TLS CA verification has been disabled for API call")
-    elif type(client.tls_verify) == str:
+    elif isinstance(client.tls_verify, str):
         logging.info("Using custom TLS CA_BUNDLE path (%s) for API call", client.tls_verify)
     else:
         logging.debug("TLS CA verification is enabled for API call")
@@ -38,9 +38,10 @@ def api_get_call(endpoint: str, client: Client, params={}) -> Optional[collectio
     param_str = "&".join(url_params_partial)
 
     plaintext = endpoint + param_str + client.secret
-    sha1 = hashlib.sha1()
-    sha1.update(plaintext.encode('utf-8'))
-    checksum = sha1.hexdigest()
+
+    sha_encode = hashlib.new(settings.hash_algorithm)
+    sha_encode.update(plaintext.encode('utf-8'))
+    checksum = sha_encode.hexdigest()
 
     param_str2 = ""
     if param_str != "":

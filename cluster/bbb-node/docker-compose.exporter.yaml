@@ -2,6 +2,7 @@ services:
   bbb-exporter:
     container_name: "bbb-exporter"
     build: ../../
+    pull_policy: build
     image: amg-web/bbb-exporter
     network_mode: host
     volumes:
