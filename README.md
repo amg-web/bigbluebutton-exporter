@@ -36,3 +36,7 @@ See: [Exporter User Guide - Environment Variables](https://bigbluebutton-exporte
 - Grafana Dashboards v2 are compatible with Grafana 13 (actual version on the moment update)
 - Grafana automatic datasource provisioning
 - other minor changes
+
+20.05.2026
+- bbb-exporter fix record counting by api
+- bbb-exporter add unpublished recording counting from disk

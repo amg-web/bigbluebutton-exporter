@@ -81,14 +81,12 @@ class BigBlueButtonCollector:
         yield self.metric_meetings_participants_origin(meetings)
 
         if settings.RECORDINGS_METRICS_ENABLE:
-            yield self.metric_recordings_unpublished(bbb_api_latency)
 
             if self.recordings_metrics_from_disk:
                 yield self.metric_recordings_processing_from_disk()
                 yield self.metric_recordings_published_from_disk()
-
-                # There is a slight race condition here since in order to calculate deleted recordings we need
-                # the number of published recordings
+                yield self.metric_recordings_unpublished_from_disk()
+                # here we count number of recording in 'deleted' dir, but it will not reflect actual data when deleted dir is truncated
                 yield self.metric_recordings_deleted_from_disk()
 
                 # This is an additional metric that is only available if recordings_metrics_from_disk is enabled
@@ -100,6 +98,7 @@ class BigBlueButtonCollector:
                 # Perform expensive API calls - this will increase the latency of the scrape
                 yield self.metric_recordings_processing(bbb_api_latency)
                 yield self.metric_recordings_published(bbb_api_latency)
+                yield self.metric_recordings_unpublished(bbb_api_latency)
                 yield self.metric_recordings_deleted(bbb_api_latency)
 
         yield bbb_api_latency
@@ -192,7 +191,7 @@ class BigBlueButtonCollector:
         logging.debug("Requesting via API recordings processing data")
         histogram = GaugeMetricFamily('bbb_recordings_processing', "Total number of BigBlueButton recordings processing")
         recording_processing_data, recording_processing_latency = execution_duration(api.get_recordings)("processing")
-        histogram.add_metric([], len(recording_processing_data))
+        histogram.add_metric([], recording_processing_data)
         self.histogram_data_recording_processing_latency.add(recording_processing_latency)
         bbb_api_latency_metric.add_metric(["getRecordings", "state=processing"],
                                           self.histogram_data_recording_processing_latency.get_buckets(),
@@ -204,7 +203,7 @@ class BigBlueButtonCollector:
         logging.debug("Requesting via API recordings published data")
         metric = GaugeMetricFamily('bbb_recordings_published', "Total number of BigBlueButton recordings published")
         recording_published_data, recording_published_latency = execution_duration(api.get_recordings)("published")
-        metric.add_metric([], len(recording_published_data))
+        metric.add_metric([], recording_published_data)
         self.histogram_data_recording_published_latency.add(recording_published_latency)
         bbb_api_latency_metric.add_metric(["getRecordings", "state=published"],
                                           self.histogram_data_recording_published_latency.get_buckets(),
@@ -215,7 +214,7 @@ class BigBlueButtonCollector:
         logging.debug("Requesting via API recordings unpublished data")
         metric = GaugeMetricFamily('bbb_recordings_unpublished', "Total number of BigBlueButton recordings unpublished")
         recording_unpublished_data, recording_unpublished_latency = execution_duration(api.get_recordings)("unpublished")
-        metric.add_metric([], len(recording_unpublished_data))
+        metric.add_metric([], recording_unpublished_data)
         self.histogram_data_recording_unpublished_latency.add(recording_unpublished_latency)
         bbb_api_latency_metric.add_metric(["getRecordings", "state=unpublished"],
                                           self.histogram_data_recording_unpublished_latency.get_buckets(),
@@ -226,7 +225,7 @@ class BigBlueButtonCollector:
         logging.debug("Requesting via API recordings deleted data")
         metric = GaugeMetricFamily('bbb_recordings_deleted', "Total number of BigBlueButton recordings deleted")
         recording_deleted_data, recording_deleted_latency = execution_duration(api.get_recordings)("deleted")
-        metric.add_metric([], len(recording_deleted_data))
+        metric.add_metric([], recording_deleted_data)
         self.histogram_data_recording_deleted_latency.add(recording_deleted_latency)
         bbb_api_latency_metric.add_metric(["getRecordings", "state=deleted"],
                                           self.histogram_data_recording_deleted_latency.get_buckets(),
@@ -288,6 +287,13 @@ class BigBlueButtonCollector:
         metric = GaugeMetricFamily('bbb_recordings_published', "Total number of BigBlueButton recordings published "
                                                                "(scraped from disk)")
         metric.add_metric([], recordings_published_from_disk(self.recordings_metrics_base_dir))
+        return metric
+
+    def metric_recordings_unpublished_from_disk(self):
+        logging.debug("Querying disk for recordings unpublished data")
+        metric = GaugeMetricFamily('bbb_recordings_unpublished', "Total number of BigBlueButton recordings unpublished "
+                                                               "(scraped from disk)")
+        metric.add_metric([], recordings_unpublished_from_disk(self.recordings_metrics_base_dir))
         return metric
 
     def metric_recordings_deleted_from_disk(self):
@@ -402,6 +408,13 @@ def recordings_processing_from_disk(bigbluebutton_base_dir) -> int:
 def recordings_published_from_disk(bigbluebutton_base_dir) -> int:
     # bigbluebutton_base_dir i.e. "/var/bigbluebutton/"
     path = os.path.join(bigbluebutton_base_dir, "published/presentation")
+    if not os.path.exists(path):
+        return 0
+    return count_dirs_in(path)
+
+def recordings_unpublished_from_disk(bigbluebutton_base_dir) -> int:
+    # bigbluebutton_base_dir i.e. "/var/bigbluebutton/"
+    path = os.path.join(bigbluebutton_base_dir, "unpublished/presentation")
     if not os.path.exists(path):
         return 0
     return count_dirs_in(path)

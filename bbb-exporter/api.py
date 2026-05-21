@@ -37,35 +37,23 @@ def get_meetings():
     return response
 
 
-def get_recordings(state: str):
+def get_recordings(state: str) -> int:
     data = api_lib.getRecordings(settings.API_CLIENT, state)
 
-    if data is None:
-        return []
+    if not data or 'response' not in data:
+        return 0
+
+    response = data['response']
+
+    if response.get('messageKey') == 'noRecordings':
+        return 0
+
+    if response.get('recordings') is None:
+        return 0
 
     try:
-        if data['response']['messageKey'] == 'noRecordings':
-            return []
-    except KeyError:
-        pass
-
-    if data['response']['recordings'] is None:
-        return []
-
-    recordings = []
-    try:
-        recordings = data['response']['totalElements']
-    except KeyError:
-        logging.warning("Failed to parse recordings")
-    except TypeError:
-        return []
-
-    response = []
-
-    for recording in recordings:
-        if not isinstance(recording, dict):
-            continue
-
-        response.append(recording)
-
-    return response
+        count = response.get('totalElements')
+        return int(count) if count is not None else 0
+    except (KeyError, ValueError, TypeError):
+        logging.warning("Failed to parse totalElements from recordings response")
+        return 0
